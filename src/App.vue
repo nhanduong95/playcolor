@@ -1,28 +1,65 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <form @submit.prevent="generateTint(hexColor)">
+      <input v-model.trim="hexColor" class="form-control" type="text" />
+      <button class="btn btn-large btn-primary">Generate Tint</button>
+    </form>
+
+    <tint-generation :rgb-color="convertedRGB"></tint-generation>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+    import TintGeneration from './components/TintGeneration';
+    import Constant from './utils/_constants'
+    import Helper from './utils/_helpers'
 
-export default {
-  name: 'app',
-  components: {
-    HelloWorld
-  }
-}
+    export default {
+        name: 'App',
+        data: function() {
+            return ({
+                hexColor: '#000000',
+                rgbColor: {
+                    r: 0,
+                    g: 0,
+                    b: 0
+                }
+            })
+        },
+        computed: {
+            convertedRGB: function () {
+                return this.rgbColor;
+            }
+        },
+        methods: {
+            generateTint: function () {
+                var processedData = this.stripHashChar(this.hexColor);
+                if (this.checkInputLength(processedData)) {
+                    this.rgbColor = Object.assign({}, Helper.parseToRGB(processedData));
+                    if (this.rgbColor) {
+                        Constant.EVENT_BUS.$emit('generateTint');
+                    }
+                } else {
+                    this.setDefaultColor()
+                }
+            },
+            stripHashChar: function (str) {
+                return str.indexOf('#') === 0 ? str.substring(1) : str;
+            },
+            checkInputLength: function (str) {
+                return str.length === 2 || str.length === 3 || str.length === 6;
+            },
+            setDefaultColor: function () {
+                this.hexColor = '#000000';
+                this.rgbColor = {
+                    r: 0,
+                    g: 0,
+                    b: 0
+                }
+            }
+        },
+        components: {
+            TintGeneration
+        }
+    };
 </script>
-
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
